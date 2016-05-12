@@ -6,7 +6,8 @@ For this assignment, i choose to use caret and randomForest packages. First let 
 ```{r}
 library(caret)
 library(randomForest)
-set.seed(3000)
+library("rpart")
+set.seed(9999)
 ```
 Import the data
 --------------------------------
@@ -33,29 +34,42 @@ Cleaning the data
 --------------------------------
 I chose a feature set that only included complete columns. There are 154 variables, then i exclueded variables with  at least one “NA”.Variables related to time and user information were excluded.
 ```{r}
-trainingdata2<- trainingdata[colSums(!is.na(trainingdata)) > 0]
-dim(trainingdata2)
+trainingdata<- trainingdata[colSums(!is.na(trainingdata)) > 0]
+dim(trainingdata)
 ```
 > 19622   154
 
 ```{r}
-trainingdata2<- trainingdata[colSums(is.na(trainingdata)) == 0]
-dim(trainingdata2)
+trainingdata<- trainingdata[colSums(is.na(trainingdata)) == 0]
+dim(trainingdata)
 
 ```
 > 19622   60
 
 ```{r}
 ## variables with user information, time and undefined
-trainingdata2<-trainingdata2[,-c(1:7)]
-trainingdata2<-trainingdata2[,-c(53)]
+trainingdata<-trainingdata[,-c(1:7)]
 dim(trainingdata2)
 ```
-> 19622    52
+> 19622    53
+
+The same data cleaning for testing dataset.
+```{r}
+testingdata <-testingdata[,colSums(is.na(testing)) == 0]
+testingdata <-testingdata[,-c(1:7)]
+```
+Cross-validation
+--------------------------------
+In this section cross-validation will be performed by splitting the training data in training (75%) and testing (25%) data.
+```{r}
+subSamples <- createDataPartition(y=trainingdata$classe, p=0.75, list=FALSE)
+subTraining <- training[subSamples, ] 
+subTesting <- training[-subSamples, ]
+```
 
 Modelling
 --------------------------------
-I then continue to make a predictive model based on the random forest paradigm, as it is one of the best performing, using the subTraining group. Once the model is made, we predict the outcome of the other group, subTesting, and examine the confusion matrix to see how well the predictive model performed
+In this section a decision tree and random forest will be applied to the data.
 
 ```{r}
 model=randomForest(classe~., data=trainingdata2, method='class')
