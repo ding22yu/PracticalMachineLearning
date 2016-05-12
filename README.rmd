@@ -1,1 +1,21 @@
 # PracticalMachineLearning-Prediction Assignment Writeup
+Preparation
+--------------------------------
+For this assignment, i choose to use caret and randomForest packages. First let us install the necessary packages. I also set a seed value for consistent result.
+
+```{r}
+library(Hmisc)
+library(caret)
+library(randomForest)
+library(foreach)
+library(doParallel)
+set.seed(3000)
+```
+Import the data
+--------------------------------
+I import the training/testing data from the link in the assignment
+
+```{r}
+trainingdata <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!", ""))
+testingdata<-read.csv("pml-testing.csv",na.strings=c("NA","#DIV/0!"))
+```
