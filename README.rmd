@@ -13,9 +13,9 @@ set.seed(3000)
 ```
 Import the data
 --------------------------------
-I import the training/testing data from the link in the assignment
+I import the training/testing data from the link in the assignment. Some values contained "#DIV/0!" or "NA". I interpret these value as NA value.
 
 ```{r}
-trainingdata <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!", ""))
+trainingdata <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!"))
 testingdata<-read.csv("pml-testing.csv",na.strings=c("NA","#DIV/0!"))
 ```
