@@ -4,11 +4,8 @@ Preparation
 For this assignment, i choose to use caret and randomForest packages. First let us install the necessary packages. I also set a seed value for consistent result.
 
 ```{r}
-library(Hmisc)
 library(caret)
 library(randomForest)
-library(foreach)
-library(doParallel)
 set.seed(3000)
 ```
 Import the data
@@ -16,6 +13,53 @@ Import the data
 I import the training/testing data from the link in the assignment. Some values contained "#DIV/0!" or "NA". I interpret these value as NA value.
 
 ```{r}
+setwd("/Users/dingd/Desktop/machine_learning")
 trainingdata <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!"))
 testingdata<-read.csv("pml-testing.csv",na.strings=c("NA","#DIV/0!"))
+dim(trainingdata)
+dim(testingdata)
+```
+```{r}
+dim(trainingdata)
+```
+> 19622   160
+
+```{r}
+dim(testingdata)
+```
+>  20 160
+
+Cleaning the data
+--------------------------------
+I chose a feature set that only included complete columns. There are 154 variables, then i exclueded variables with  at least one “NA”.Variables related to time and user information were excluded.
+```{r}
+trainingdata2<- trainingdata[colSums(!is.na(trainingdata)) > 0]
+dim(trainingdata2)
+```
+> 19622   154
+
+```{r}
+trainingdata2<- trainingdata[colSums(is.na(trainingdata)) == 0]
+dim(trainingdata2)
+
+```
+> 19622   60
+
+```{r}
+## variables with user information, time and undefined
+trainingdata2<-trainingdata2[,-c(1:7)]
+trainingdata2<-trainingdata2[,-c(53)]
+dim(trainingdata2)
+```
+> 19622    52
+
+Modelling
+--------------------------------
+I then continue to make a predictive model based on the random forest paradigm, as it is one of the best performing, using the subTraining group. Once the model is made, we predict the outcome of the other group, subTesting, and examine the confusion matrix to see how well the predictive model performed
+
+```{r}
+model=randomForest(classe~., data=trainingdata2, method='class')
+pred=predict(model,testingdata, type='class')
+z=confusionMatrix(pred,subTesting$classe)
+save(z,file='test.RData')
 ```
