@@ -7,6 +7,8 @@ For this assignment, i choose to use caret and randomForest packages. First let 
 library(caret)
 library(randomForest)
 library("rpart")
+library("rpart.plot")
+library("e1071")
 set.seed(9999)
 ```
 Import the data
@@ -23,13 +25,15 @@ dim(testingdata)
 ```{r}
 dim(trainingdata)
 ```
-> 19622   160
-
+```{r}
+19622   160
+```
 ```{r}
 dim(testingdata)
 ```
->  20 160
-
+```{r}
+20 160
+```
 Cleaning the data
 --------------------------------
 I chose a feature set that only included complete columns. There are 154 variables, then i exclueded variables with  at least one “NA”.Variables related to time and user information were excluded.
@@ -37,25 +41,30 @@ I chose a feature set that only included complete columns. There are 154 variabl
 trainingdata<- trainingdata[colSums(!is.na(trainingdata)) > 0]
 dim(trainingdata)
 ```
-> 19622   154
-
+```{r}
+19622   154
+```
 ```{r}
 trainingdata<- trainingdata[colSums(is.na(trainingdata)) == 0]
 dim(trainingdata)
-
 ```
-> 19622   60
+```{r}
+19622   60
+```
 
 ```{r}
 ## variables with user information, time and undefined
 trainingdata<-trainingdata[,-c(1:7)]
-dim(trainingdata2)
+dim(trainingdata)
 ```
-> 19622    53
+
+```{r}
+19622    53
+```
 
 The same data cleaning for testing dataset.
 ```{r}
-testingdata <-testingdata[,colSums(is.na(testing)) == 0]
+testingdata <-testingdata[,colSums(is.na(testingdata)) == 0]
 testingdata <-testingdata[,-c(1:7)]
 ```
 Cross-validation
@@ -63,17 +72,99 @@ Cross-validation
 In this section cross-validation will be performed by splitting the training data in training (75%) and testing (25%) data.
 ```{r}
 subSamples <- createDataPartition(y=trainingdata$classe, p=0.75, list=FALSE)
-subTraining <- training[subSamples, ] 
-subTesting <- training[-subSamples, ]
+subtraining <- trainingdata[subSamples, ] 
+subtesting <- trainingdata[-subSamples, ]
 ```
 
-Modelling
+Decision tree
 --------------------------------
 In this section a decision tree and random forest will be applied to the data.
 
 ```{r}
-model=randomForest(classe~., data=trainingdata2, method='class')
-pred=predict(model,testingdata, type='class')
-z=confusionMatrix(pred,subTesting$classe)
-save(z,file='test.RData')
+modFitDT <- rpart(classe ~ ., data=subtraining, method="class")
+predictDT <- predict(modFitDT, subtesting, type = "class")
+rpart.plot(modFitDT, main="Classification Tree", extra=102, under=TRUE, faclen=0)
+confusionMatrix(predictDT, subtesting$classe)
+```
+
+```{r}
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 1266  208   25   91   29
+         B   33  535   71   30   67
+         C   28   90  676  130   94
+         D   45   72   59  501   43
+         E   23   44   24   52  668
+
+Overall Statistics
+                                         
+               Accuracy : 0.7435         
+                 95% CI : (0.731, 0.7557)
+    No Information Rate : 0.2845         
+    P-Value [Acc > NIR] : < 2.2e-16      
+                                         
+                  Kappa : 0.6738         
+ Mcnemar's Test P-Value : < 2.2e-16      
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9075   0.5638   0.7906   0.6231   0.7414
+Specificity            0.8994   0.9492   0.9155   0.9466   0.9643
+Pos Pred Value         0.7820   0.7269   0.6640   0.6958   0.8237
+Neg Pred Value         0.9607   0.9007   0.9539   0.9276   0.9431
+Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
+Detection Rate         0.2582   0.1091   0.1378   0.1022   0.1362
+Detection Prevalence   0.3301   0.1501   0.2076   0.1468   0.1654
+Balanced Accuracy      0.9035   0.7565   0.8531   0.7849   0.8528
+```
+
+Random forest
+--------------------------------
+
+```{r}
+# Fit model
+modFitRF <- randomForest(classe ~ ., data=subtraining, method="class")
+
+# Perform prediction
+predictRF <- predict(modFitRF, subtesting, type = "class")
+
+# Following confusion matrix shows the errors of the prediction algorithm.
+
+confusionMatrix(predictRF, subtesting$classe)
+```
+```{r}
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 1394    2    0    0    0
+         B    1  946    8    0    0
+         C    0    1  846    6    0
+         D    0    0    1  796    1
+         E    0    0    0    2  900
+
+Overall Statistics
+                                          
+               Accuracy : 0.9955          
+                 95% CI : (0.9932, 0.9972)
+    No Information Rate : 0.2845          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.9943          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9993   0.9968   0.9895   0.9900   0.9989
+Specificity            0.9994   0.9977   0.9983   0.9995   0.9995
+Pos Pred Value         0.9986   0.9906   0.9918   0.9975   0.9978
+Neg Pred Value         0.9997   0.9992   0.9978   0.9981   0.9998
+Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
+Detection Rate         0.2843   0.1929   0.1725   0.1623   0.1835
+Detection Prevalence   0.2847   0.1947   0.1739   0.1627   0.1839
+Balanced Accuracy      0.9994   0.9973   0.9939   0.9948   0.9992
 ```
