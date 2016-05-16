@@ -169,3 +169,7 @@ Detection Prevalence   0.2847   0.1947   0.1739   0.1627   0.1839
 Balanced Accuracy      0.9994   0.9973   0.9939   0.9948   0.9992
 ```
 
+Result
+--------------------------------
+Form the result above, the Random Forest algorithm is better compare to the decision trees algorithm.The accuracy of the Random Forest model was 0.995 (95% CI: (0.993, 0.997)) compared to 0.739 (95% CI: (0.727, 0.752)) for decision trees algorithm. Hence the Random Forest model is choosen.
+
